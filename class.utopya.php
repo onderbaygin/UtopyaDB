@@ -296,7 +296,7 @@ class Query extends Schemas
         return rtrim($val);
 
     }
-    public function query($params, $type)
+    public function query($params, $type = array("limit"=>9999999, "skip"=>0))
     {
         if (!is_callable($params)) {
             $condition   = $this->Condition($params);
@@ -318,7 +318,7 @@ class Query extends Schemas
                 arsort($files);
             }
             foreach ($files as $file) {
-                if ($limit === 0) {
+                if (@$limit === 0) {
                     break;
                 }
 
@@ -393,8 +393,8 @@ class Query extends Schemas
             natsort($datas);
             $datas = array_reverse($datas);
             $data  = array();
-            $limit = (!$l) ? $s : $l;
-            $skip  = ($l) ? $s : 0;
+            $limit = (!@$l) ? @$s : @$l;
+            $skip  = (@$l) ? @$s : 0;
             $datas = array_slice($datas, $skip, $limit);
             foreach ($datas as $file) {
                 $file = json_decode(file_get_contents($file), true);
@@ -445,17 +445,20 @@ class Query extends Schemas
                 $this->error("Documents not found", $this->schemaName . " " . print_r($query, true));
                 return false;
             }
+            $response = false;;
             foreach ($document as $d) {
                 $file = $this->schema . "/" . $d["id"] . ".json";
                 try {
                     unlink($file);
-                    return true;
+                    $response = true;
+                   // return true; birden fazla silmediği için kaldırdım
                 } catch (Exception $e) {
                     $this->error($e, $this->schemaName);
-                    return false;
+                    // return false; birden fazla silmediği için kaldırdım
                 }
             }
         }
+        return $response;
     }
     public function findOne($id)
     {
@@ -542,7 +545,7 @@ class Result
         usort($this->result, $p);
         return $this;
     }
-    public function result($index)
+    public function result($index = null)
     {
         if ($index !== null && is_numeric($index)) {
             return $this->result[$index];
