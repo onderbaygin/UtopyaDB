@@ -184,6 +184,9 @@ class Schemas extends dbOperate
                 $todo($docInfo->getRealPath());
             }
             rmdir($this->schema);
+            $ids = json_decode(file_get_contents($this->dbPath . 'last-ids.json'), true);
+            unset($ids[$this->schemaName]);
+            file_put_contents($this->dbPath . 'last-ids.json', json_encode($ids));
             return true;
         } catch (Exception $e) {
             $this->error("Schema not found", $this->schemaName);
